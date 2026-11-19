@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Request, Depends, HTTPException, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import os
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from app import models, schemas, crud, auth
 from app.database import engine, get_db, Base
@@ -15,7 +15,18 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="TripPlanner")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+
+# Jinja2 environment (без Jinja2Templates из starlette — проблемы с кэшем globals)
+env = Environment(
+    loader=FileSystemLoader("templates"),
+    autoescape=select_autoescape(["html", "xml"]),
+)
+
+
+def render_template(name: str, **context) -> HTMLResponse:
+    template = env.get_template(name)
+    html = template.render(**context)
+    return HTMLResponse(content=html)
 
 
 # ---------- Helpers ----------
@@ -43,21 +54,19 @@ def home(request: Request, db: Session = Depends(get_db)):
     if not user:
         return RedirectResponse(url="/login")
     trips = crud.get_trips_by_owner(db, user.id)
-    return templates.TemplateResponse("trips.html", {"request": request, "user": user, "trips": trips})
+    return render_template("trips.html", user=user, trips=trips)
 
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return render_template("login.html")
 
 
 @app.post("/login")
 def login(request: Request, db: Session = Depends(get_db), username: str = Form(...), password: str = Form(...)):
     user = crud.get_user_by_username(db, username)
     if not user or not auth.verify_password(password, user.hashed_password):
-        return templates.TemplateResponse(
-            "login.html", {"request": request, "error": "Неверный логин или пароль"}
-        )
+        return render_template("login.html", error="Неверный логин или пароль")
     token = auth.create_access_token({"sub": user.username})
     response = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
     response.set_cookie(key="access_token", value=token, httponly=True)
@@ -66,18 +75,18 @@ def login(request: Request, db: Session = Depends(get_db), username: str = Form(
 
 @app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return render_template("register.html")
 
 
 @app.post("/register")
 def register(request: Request, db: Session = Depends(get_db), username: str = Form(...), password: str = Form(...)):
     if len(username) < 3 or len(password) < 3:
-        return templates.TemplateResponse(
-            "register.html", {"request": request, "error": "Логин и пароль должны быть не менее 3 символов"}
+        return render_template(
+            "register.html", error="Логин и пароль должны быть не менее 3 символов"
         )
     if crud.get_user_by_username(db, username):
-        return templates.TemplateResponse(
-            "register.html", {"request": request, "error": "Пользователь уже существует"}
+        return render_template(
+            "register.html", error="Пользователь уже существует"
         )
     crud.create_user(db, schemas.UserCreate(username=username, password=password))
     return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
@@ -92,7 +101,7 @@ def logout():
 
 @app.get("/trips/new", response_class=HTMLResponse)
 def new_trip_page(request: Request, user=Depends(require_user)):
-    return templates.TemplateResponse("trip_form.html", {"request": request, "user": user, "trip": None})
+    return render_template("trip_form.html", user=user, trip=None)
 
 
 @app.post("/trips/new")
@@ -127,8 +136,8 @@ def trip_detail(request: Request, trip_id: int, db: Session = Depends(get_db), u
     if not trip or trip.owner_id != user.id:
         raise HTTPException(status_code=404)
     plan_items = crud.get_plan_items_by_trip(db, trip_id)
-    return templates.TemplateResponse(
-        "trip_detail.html", {"request": request, "user": user, "trip": trip, "plan_items": plan_items}
+    return render_template(
+        "trip_detail.html", user=user, trip=trip, plan_items=plan_items
     )
 
 
@@ -153,7 +162,7 @@ def new_plan_item_page(request: Request, trip_id: int, db: Session = Depends(get
     trip = crud.get_trip(db, trip_id)
     if not trip or trip.owner_id != user.id:
         raise HTTPException(status_code=404)
-    return templates.TemplateResponse("plan_form.html", {"request": request, "user": user, "trip": trip})
+    return render_template("plan_form.html", user=user, trip=trip)
 
 
 @app.post("/trips/{trip_id}/plan/new")
@@ -188,20 +197,16 @@ def stats_page(request: Request, db: Session = Depends(get_db), user=Depends(req
     total_trips = len(trips)
     total_budget = sum(t.budget for t in trips)
     avg_budget = total_budget / total_trips if total_trips else 0
-    # grouping by destination
     by_destination = {}
     for t in trips:
         by_destination[t.destination] = by_destination.get(t.destination, 0) + 1
-    return templates.TemplateResponse(
+    return render_template(
         "stats.html",
-        {
-            "request": request,
-            "user": user,
-            "total_trips": total_trips,
-            "total_budget": total_budget,
-            "avg_budget": round(avg_budget, 2),
-            "by_destination": by_destination.items(),
-        },
+        user=user,
+        total_trips=total_trips,
+        total_budget=total_budget,
+        avg_budget=round(avg_budget, 2),
+        by_destination=by_destination.items(),
     )
 
 
