@@ -1,0 +1,53 @@
+* { box-sizing: border-box; }
+body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    margin: 0; background: #f4f6f8; color: #222;
+}
+header {
+    background: #1f6feb; color: #fff; padding: 1rem 0;
+}
+header .container { display: flex; justify-content: space-between; align-items: center; }
+header h1 { margin: 0; font-size: 1.5rem; }
+header nav a { color: #cfe3ff; text-decoration: none; margin-left: 1rem; }
+header nav a:hover { text-decoration: underline; }
+.user { color: #fff; font-weight: bold; margin-left: 1rem; }
+
+.container { max-width: 800px; margin: 1.5rem auto; padding: 0 1rem; }
+h2 { margin-top: 0; }
+
+.btn {
+    display: inline-block; background: #1f6feb; color: #fff; border: none;
+    padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; text-decoration: none;
+    font-size: 0.9rem;
+}
+.btn:hover { background: #165bc4; }
+.btn-sm { padding: 0.35rem 0.7rem; font-size: 0.85rem; }
+.btn-danger { background: #d32f2f; }
+.btn-danger:hover { background: #b71c1c; }
+
+form { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-bottom: 1.5rem; }
+form input { padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
+
+.trip-list { list-style: none; padding: 0; margin: 0; }
+.trip-card {
+    background: #fff; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex;
+    justify-content: space-between; align-items: center;
+}
+.trip-card strong { font-size: 1.1rem; }
+.badge {
+    background: #eef3fb; color: #1f6feb; border-radius: 999px;
+    padding: 0.2rem 0.7rem; font-size: 0.85rem;
+}
+.muted { color: #666; font-size: 0.9rem; }
+.empty { color: #888; font-style: italic; }
+
+.error { color: #b71c1c; margin-bottom: 1rem; }
+
+.plan-list { list-style: none; padding: 0; margin: 0; }
+.plan-list li {
+    padding: 0.6rem 0; border-bottom: 1px solid #eee;
+}
+.plan-list li:last-child { border-bottom: none; }
+
+footer { margin-top: 2rem; padding: 1rem 0; color: #888; text-align: center; border-top: 1px solid #ddd; }

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+<h2>Моя статистика</h2>
+<p><strong>Всего поездок:</strong> {{ total_trips }}</p>
+<p><strong>Общий бюджет:</strong> {{ total_budget }} руб.</p>
+<p><strong>Средний бюджет:</strong> {{ avg_budget }} руб.</p>
+
+<h3>Поездок по направлениям:</h3>
+<ul>
+    {% for dest, count in by_destination %}
+    <li>{{ dest }} — {{ count }}</li>
+    {% endfor %}
+</ul>
+
+<p><a href="/" class="btn btn-sm">← Назад</a></p>
+{% endblock %}

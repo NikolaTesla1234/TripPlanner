@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Пункт плана{% endblock %}
+
+{% block content %}
+<h2>Добавить пункт плана для «{{ trip.title }}»</h2>
+<form method="POST">
+    <input type="text" name="title" placeholder="Название пункта" required>
+    <input type="date" name="date" required>
+    <input type="text" name="time" placeholder="Время (опционально)">
+    <input type="text" name="description" placeholder="Описание">
+    <button type="submit" class="btn">Добавить</button>
+    <a href="/trips/{{ trip.id }}" class="btn btn-sm">Отмена</a>
+</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ trip.title }}{% endblock %}
+
+{% block content %}
+<h2>{{ trip.title }}</h2>
+<p><strong>Куда:</strong> {{ trip.destination }}</p>
+<p><strong>Когда:</strong> {{ trip.start_date }} — {{ trip.end_date }}</p>
+<p><strong>Бюджет:</strong> {{ trip.budget }} руб.</p>
+<p><strong>Описание:</strong> {{ trip.description }}</p>
+<p><strong>Лайки:</strong> {{ trip.likes }}</p>
+
+<form method="POST" action="/trips/{{ trip.id }}/like" style="display:inline;">
+    <button type="submit" class="btn btn-sm">❤️ Лайк</button>
+</form>
+<form method="POST" action="/trips/{{ trip.id }}/delete" style="display:inline;" onsubmit="return confirm('Удалить поездку?')">
+    <button type="submit" class="btn btn-danger btn-sm">Удалить поездку</button>
+</form>
+
+<h3>План поездки</h3>
+<a href="/trips/{{ trip.id }}/plan/new" class="btn btn-sm">+ Добавить пункт плана</a>
+
+{% if plan_items %}
+    <ul class="plan-list">
+        {% for item in plan_items %}
+        <li>
+            <strong>{{ item.title }}</strong> — {{ item.date }} {{ item.time }}
+            {% if item.description %}<br><span class="muted">{{ item.description }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="empty">Пункты плана не добавлены.</p>
+{% endif %}
+
+<p><a href="/" class="btn btn-sm">← Назад к списку</a></p>
+{% endblock %}

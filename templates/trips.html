@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Мои поездки{% endblock %}
+
+{% block content %}
+<h2>Мои поездки</h2>
+<a href="/trips/new" class="btn">+ Добавить поездку</a>
+
+{% if trips %}
+    <ul class="trip-list">
+        {% for trip in trips %}
+        <li class="trip-card">
+            <a href="/trips/{{ trip.id }}"><strong>{{ trip.title }}</strong></a>
+            <span class="badge">{{ trip.destination }}</span>
+            <span class="muted">{{ trip.start_date }} — {{ trip.end_date }}</span>
+            <span class="muted">Бюджет: {{ trip.budget }} руб.</span>
+            <span class="muted">❤️ {{ trip.likes }}</span>
+            <form method="POST" action="/trips/{{ trip.id }}/delete" style="display:inline;" onsubmit="return confirm('Удалить поездку?')">
+                <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="empty">Поездок пока нет. <a href="/trips/new">Добавьте первую!</a></p>
+{% endif %}
+{% endblock %}
