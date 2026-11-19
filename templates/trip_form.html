@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}{% if trip %}Редактировать{% else %}Новая поездка{% endblock %}{% endblock %}
+{% block title %}{% if trip %}Редактировать{% else %}Новая поездка{% endif %}{% endblock %}
 
 {% block content %}
-<h2>{% if trip %}Редактировать поездку{% else %}Добавить поездку{% endblock %}</h2>
+<h2>{% if trip %}Редактировать поездку{% else %}Добавить поездку{% endif %}</h2>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
 <form method="POST">
-    <input type="text" name="title" placeholder="Название поездки" value="{{ trip.title if trip else '' }}" required>
-    <input type="text" name="destination" placeholder="Пункт назначения" value="{{ trip.destination if trip else '' }}" required>
-    <input type="date" name="start_date" value="{{ trip.start_date if trip else '' }}" required>
-    <input type="date" name="end_date" value="{{ trip.end_date if trip else '' }}" required>
-    <input type="number" name="budget" placeholder="Бюджет" value="{{ trip.budget if trip else '' }}" step="0.01">
-    <input type="text" name="description" placeholder="Описание" value="{{ trip.description if trip else '' }}">
+    <input type="text" name="title" placeholder="Название поездки" value="{{ form_title if form_title else (trip.title if trip else '') }}" required>
+    <input type="text" name="destination" placeholder="Пункт назначения" value="{{ form_destination if form_destination else (trip.destination if trip else '') }}" required>
+    <input type="date" name="start_date" value="{{ form_start_date if form_start_date else (trip.start_date if trip else '') }}" required>
+    <input type="date" name="end_date" value="{{ form_end_date if form_end_date else (trip.end_date if trip else '') }}" required>
+    <input type="number" name="budget" placeholder="Бюджет" value="{{ form_budget if form_budget is not none else (trip.budget if trip else '') }}" step="0.01">
+    <input type="text" name="description" placeholder="Описание" value="{{ form_description if form_description else (trip.description if trip else '') }}">
     <button type="submit" class="btn">Сохранить</button>
     <a href="/" class="btn btn-sm">Отмена</a>
 </form>

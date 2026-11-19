@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Все поездки</h2>
+
+{% if trips %}
+    <div class="trip-list">
+        {% for trip in trips %}
+        <div class="card trip-card">
+            <div class="card-header">
+                <a href="{{ url_for('trip_detail', trip_id=trip.id) }}"><strong>{{ trip.title }}</strong></a>
+                <span class="badge">{{ trip.destination }}</span>
+            </div>
+            <p class="muted">{{ trip.start_date }} — {{ trip.end_date }}</p>
+            {% if trip.description %}<p>{{ trip.description }}</p>{% endif %}
+            <div class="card-actions">
+                <a href="{{ url_for('trip_detail', trip_id=trip.id) }}" class="btn btn-sm">Открыть</a>
+                <a href="{{ url_for('delete_trip', trip_id=trip.id) }}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Удалить поездку "{{ trip.title }}"?')">Удалить</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty">Поездок пока нет. <a href="{{ url_for('add_trip') }}">Добавьте первую!</a></div>
+{% endif %}
+{% endblock %}

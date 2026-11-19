@@ -4,11 +4,12 @@
 
 {% block content %}
 <h2>Добавить пункт плана для «{{ trip.title }}»</h2>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
 <form method="POST">
-    <input type="text" name="title" placeholder="Название пункта" required>
-    <input type="date" name="date" required>
-    <input type="text" name="time" placeholder="Время (опционально)">
-    <input type="text" name="description" placeholder="Описание">
+    <input type="text" name="title" placeholder="Название пункта" value="{{ form_title if form_title else '' }}" required>
+    <input type="date" name="date" value="{{ form_date if form_date else '' }}" required>
+    <input type="text" name="time" placeholder="Время (опционально)" value="{{ form_time if form_time else '' }}">
+    <input type="text" name="description" placeholder="Описание" value="{{ form_description if form_description else '' }}">
     <button type="submit" class="btn">Добавить</button>
     <a href="/trips/{{ trip.id }}" class="btn btn-sm">Отмена</a>
 </form>

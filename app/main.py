@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import os
+from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from app import models, schemas, crud, auth
@@ -14,11 +15,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="TripPlanner")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Абсолютные пути к папкам шаблонов и статики (работает из любой рабочей директории)
+BASE_DIR = Path(__file__).resolve().parent.parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Jinja2 environment (без Jinja2Templates из starlette — проблемы с кэшем globals)
 env = Environment(
-    loader=FileSystemLoader("templates"),
+    loader=FileSystemLoader(str(TEMPLATES_DIR)),
     autoescape=select_autoescape(["html", "xml"]),
 )
 
@@ -118,11 +124,41 @@ def create_trip(
 ):
     from datetime import date
 
+    try:
+        start = date.fromisoformat(start_date)
+        end = date.fromisoformat(end_date)
+    except ValueError:
+        return render_template(
+            "trip_form.html",
+            user=user,
+            trip=None,
+            error="Некорректный формат даты. Используйте ГГГГ-ММ-ДД",
+            form_title=title,
+            form_destination=destination,
+            form_start_date=start_date,
+            form_end_date=end_date,
+            form_budget=budget,
+            form_description=description,
+        )
+    if start > end:
+        return render_template(
+            "trip_form.html",
+            user=user,
+            trip=None,
+            error="Дата начала не может быть позже даты окончания",
+            form_title=title,
+            form_destination=destination,
+            form_start_date=start_date,
+            form_end_date=end_date,
+            form_budget=budget,
+            form_description=description,
+        )
+
     trip = schemas.TripCreate(
         title=title,
         destination=destination,
-        start_date=date.fromisoformat(start_date),
-        end_date=date.fromisoformat(end_date),
+        start_date=start,
+        end_date=end,
         budget=budget,
         description=description,
     )
@@ -181,9 +217,22 @@ def create_plan_item(
     trip = crud.get_trip(db, trip_id)
     if not trip or trip.owner_id != user.id:
         raise HTTPException(status_code=404)
+    try:
+        parsed_date = d.fromisoformat(date)
+    except ValueError:
+        return render_template(
+            "plan_form.html",
+            user=user,
+            trip=trip,
+            error="Некорректный формат даты. Используйте ГГГГ-ММ-ДД",
+            form_title=title,
+            form_date=date,
+            form_time=time,
+            form_description=description,
+        )
     item = schemas.PlanItemCreate(
         title=title,
-        date=d.fromisoformat(date),
+        date=parsed_date,
         time=time,
         description=description,
     )
